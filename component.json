@@ -1,0 +1,5 @@
+{
+  "name": "DropletJS.Sequence",
+  "version": "0.1.0",
+  "main": "./src/DropletJS.Sequence.min.js"
+}
