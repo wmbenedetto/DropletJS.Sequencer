@@ -125,9 +125,13 @@ if (typeof MINIFIED === 'undefined'){
      *  - onComplete    : Function to call automatically once sequence is complete
      *
      * @constructor
-     * @param options Object containing sequence options
+     * @param options Object containing sequence options, or array of sequence steps
      */
     var Sequence = function Sequence(options){
+
+        if (typeof options === 'object' && options !== null && typeof options.length === 'number'){
+            options = { steps : options }
+        }
 
         this.completed                      = 0;
         this.killed                         = false;
@@ -179,7 +183,7 @@ if (typeof MINIFIED === 'undefined'){
 
             if (!MINIFIED){
 
-                funcName                        = (this.name) ? this.name+': DropletJS.Sequence.'+funcName : 'DropletJS.Sequence.'+funcName;
+                funcName                    = (this.name) ? this.name+': DropletJS.Sequence.'+funcName : 'DropletJS.Sequence.'+funcName;
 
                 log(funcName,message,payload,level);
             }
