@@ -121,7 +121,7 @@
         then slide this up, then expand that, then fade those other things in.
     </p>
     <p>
-        Can you do all this without DropletJS.Sequence? Sure, if you like tightly coupled code that's isn't modular or reusable.
+        Can you do all that without DropletJS.Sequence? Sure, if you like tightly coupled code that's isn't modular or reusable.
         You can just load up your code with callbacks, conditionals, and nested functions until it's a tangled, unmaintainable mess.
     </p>
     <p>
@@ -260,19 +260,19 @@
     </p>
     <script type="text/javascript" id="example-3">
     var box1Height = function(seq){
-        $('.example-3 .box-1').animate({ height : '100px' }, seq.next);
+        $('.example-3 .box-1').animate({ height : '100px' }, seq.next.bind(seq));
     };
 
     var box2Width = function(seq){
-        $('.example-3 .box-2').animate({ width : '100px' }, seq.next);
+        $('.example-3 .box-2').animate({ width : '100px' }, seq.next.bind(seq));
     };
 
     var box2Height = function(seq){
-        $('.example-3 .box-2').animate({ height : '100px' }, seq.next);
+        $('.example-3 .box-2').animate({ height : '100px' }, seq.next.bind(seq));
     };
 
     var box3Height = function(seq){
-        $('.example-3 .box-3').animate({ height : '100px' }, seq.next);
+        $('.example-3 .box-3').animate({ height : '100px' }, seq.next.bind(seq));
     };
 
     $(document).ready(function(){
@@ -487,7 +487,7 @@
     </h4>
     <p>
         The sequence isn't started until you call the <code>run()</code> method on the sequence instance you created.
-        The DropletJS.Sequence constructor returns an instance of the class' API, so <code>run()</code> can be chained
+        The DropletJS.Sequence constructor returns a reference to itself, so <code>run()</code> can be chained
         directly with the constructor like in the example below:
     </p>
     <xmp class="prettyprint lang-js">
@@ -541,7 +541,7 @@
         is useful if you're debugging multiple sequences in a page.
     </p>
     <p>
-        Setting the <code>logLevel</code> option will control how many and what type of log messages are output.
+        Setting the <code>logLevel</code> option will control how many and what type of log messages are output. Valid values are:
     </p>
     <ul>
         <li><code>OFF</code> Turn off all debug logging</li>
@@ -747,7 +747,13 @@
             var seq = new DropletJS.Sequence();
 
             seq.addStep(seqExample.doFirstThing.bind(seqExample));
+
+            // Do some stuff ...
+
             seq.addStep(seqExample.doSecondThing.bind(seqExample));
+
+            // Do some more stuff ...
+
             seq.addStep(seqExample.doThirdThing.bind(seqExample));
 
             seq.run();
