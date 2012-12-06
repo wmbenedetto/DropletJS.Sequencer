@@ -1,4 +1,4 @@
-/** @license DropletJS.Sequence | MIT License | https://github.com/wmbenedetto/DropletJS.Sequence#mit-license */
+/** @license DropletJS.Sequencer | MIT License | https://github.com/wmbenedetto/DropletJS.Sequencer#mit-license */
 if (typeof MINIFIED === 'undefined'){
     MINIFIED = false;
 }
@@ -11,7 +11,7 @@ if (typeof MINIFIED === 'undefined'){
  * /_____/_/   \____/ .___/_/\___/\__/\____//____/
  *                 /_/
  *
- * DropletJS.Sequence : JavaScript Function Synchronizer
+ * DropletJS.Sequencer : JavaScript Function Sequencer
  *
  * Copyright (c) 2012 Warren Benedetto <warren@transfusionmedia.com>
  *
@@ -115,7 +115,7 @@ if (typeof MINIFIED === 'undefined'){
     };
 
     /**
-     * Sequence class constructor
+     * Sequencer class constructor
      *
      * Valid options:
      *
@@ -128,7 +128,7 @@ if (typeof MINIFIED === 'undefined'){
      * @param steps Array of function references to call in sequence
      * @param options Object containing sequence options (name, logLevel, onComplete, onKilled)
      */
-    var Sequence = function Sequence(steps,options){
+    var Sequencer = function Sequencer(steps,options){
 
         var validLogLevels                  = {OFF : 1,ERROR : 1,WARN: 1,INFO : 1,DEBUG : 1};
 
@@ -148,11 +148,11 @@ if (typeof MINIFIED === 'undefined'){
     };
 
     /**
-     * Sequence class prototype
+     * Sequencer class prototype
      *
      * @type {Object}
      */
-    Sequence.prototype = {
+    Sequencer.prototype = {
 
         /**
          * Alias for global log(). Prepends sequence name to funcName.
@@ -166,7 +166,7 @@ if (typeof MINIFIED === 'undefined'){
 
             if (!MINIFIED){
 
-                funcName                    = (this.name) ? this.name+': DropletJS.Sequence.'+funcName : 'DropletJS.Sequence.'+funcName;
+                funcName                    = (this.name) ? this.name+': DropletJS.Sequencer.'+funcName : 'DropletJS.Sequencer.'+funcName;
 
                 log(funcName,message,payload,level);
             }
@@ -281,8 +281,8 @@ if (typeof MINIFIED === 'undefined'){
                     this.log('next','Executing step ' + this.completed + ' of '+this.total+' of the '+this.name+' sequence', null, 'DEBUG');
                 }
 
-                /* If the next step is a Sequence itself, run it */
-                if (nextStep instanceof Sequence){
+                /* If the next step is a Sequencer itself, run it */
+                if (nextStep instanceof Sequencer){
 
                     this.runChildSequence(nextStep,args);
                 }
@@ -416,18 +416,18 @@ if (typeof MINIFIED === 'undefined'){
         }
     };
 
-    /* If RequireJS define() is present, use it to export Sequence */
+    /* If RequireJS define() is present, use it to export Sequencer */
     if (typeof define === "function") {
 
         define(function() {
-            return Sequence;
+            return Sequencer;
         });
     }
-    /* Otherwise, add Sequence to global namespace as DropletJS.Sequence */
+    /* Otherwise, add Sequencer to global namespace as DropletJS.Sequencer */
     else {
 
         window.DropletJS                        = (typeof window.DropletJS === 'object' && window.DropletJS !== 'null') ? window.DropletJS : {};
-        window.DropletJS.Sequence               = Sequence;
+        window.DropletJS.Sequencer              = Sequencer;
     }
 
 }(window));
