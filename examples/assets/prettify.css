@@ -129,4 +129,5 @@ pre.prettyprint {
   font-size: 12px;
   line-height: 1.5;
   border: 1px solid #ccc;
+  overflow-x:auto;
   padding: 10px; }

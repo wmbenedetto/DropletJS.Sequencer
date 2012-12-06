@@ -731,20 +731,254 @@
         Adding functions one at a time instead of all at once
     </h4>
     <p>
-
+        There may be cases where you want to build up a sequence one step at a time instead of passing an array of
+        functions to the constructor. You can do this using the <code>addStep()</code> function.
     </p>
+    <p>
+        Functions added using <code>addStep()</code> are added to the end of the sequence.
+    </p>
+    <script type="text/javascript" id="example-10">
+    var example10 = {
+
+        doThings : function(){
+
+            seqExample.exampleNum = 10;
+
+            var seq = new DropletJS.Sequence();
+
+            seq.addStep(seqExample.doFirstThing.bind(seqExample));
+            seq.addStep(seqExample.doSecondThing.bind(seqExample));
+            seq.addStep(seqExample.doThirdThing.bind(seqExample));
+
+            seq.run();
+        }
+    };
+    </script>
+    <div class="example-10 example">
+        <div class="output">
+            <h4>Example 10:</h4>
+        </div>
+        <div class="buttons">
+            <input type="button" value="Run" class="button" onclick="example10.doThings()" />
+        </div>
+    </div>
     <h4>
         Passing values between functions in a sequence
     </h4>
+    <p>
+        Sometimes you need to pass a value between functions in a sequence.
+    </p>
+    <p>
+        To pass a value to the first function in the sequence, you can pass it as an argument (or arguments)
+        to the <code>run()</code> function.
+    </p>
+    <p>
+        You can continue passing values along the sequence by passing them as arguments to the <code>next()</code> function.
+    </p>
+    <p>
+        Arguments passed to <code>next()</code> in the last function of the sequence will be passed to the
+        <code>onComplete()</code> function (if defined).
+    </p>
+    <p>
+        Of course, in all cases, the functions need to be prepared to accept and use those arguments.
+    </p>
+    <p>
+        <strong>PROTIP:</strong> To avoid tightly coupling functions together, write your functions to accept a single
+        data object as the lone argument.
+    </p>
+    <script type="text/javascript" id="example-11">
+    var seqExample2 = {
+
+        exampleNum : 11,
+
+        // data argument passed in from seq.run()
+        doFirstThing : function(data,seq){
+            console.log(arguments);
+            data.counter++;
+            data.increment = 5;
+            $('.example-'+this.exampleNum+' .output').append('<div>doFirstThing counter: '+data.counter+'</div>');
+            seq.next(data); // data passed to next function in sequence
+        },
+
+        // data argument passed in from previous function in sequence
+        doSecondThing : function(data,seq){
+            data.counter += data.increment;
+            $('.example-'+this.exampleNum+' .output').append('<div>doSecondThing counter: '+data.counter+'</div>');
+            seq.next(data); // data passed to next function in sequence
+        },
+
+        // data argument passed in from previous function in sequence
+        doThirdThing : function(data,seq){
+            data.counter++;
+            $('.example-'+this.exampleNum+' .output').append('<div>doThirdThing counter: '+data.counter+'</div>');
+            seq.next(data); // data passed to onComplete
+        },
+
+        doThings : function(){
+
+            var steps = [
+                this.doFirstThing.bind(this),
+                this.doSecondThing.bind(this),
+                this.doThirdThing.bind(this)
+            ];
+
+            var options = {
+
+                onComplete : function(data){
+                    data.counter++;
+                    $('.example-11 .output').append('<div>onComplete counter: '+data.counter+'</div>');
+                }
+            };
+
+            var data = {
+                counter : 0
+            };
+
+            var seq = new DropletJS.Sequence(steps,options).run(data);
+        }
+    };
+    </script>
+    <p>
+        Click Run below. Note how the counter in doSecondThing is incremented by the value of data.increment set in doFirstThing().
+    </p>
+    <div class="example-11 example">
+        <div class="output">
+            <h4>Example 11:</h4>
+        </div>
+        <div class="buttons">
+            <input type="button" value="Run" class="button" onclick="seqExample2.doThings()" />
+        </div>
+    </div>
     <h4>
-        Retrieving results from a sequence
+        Retrieving results from the previous function in the sequence
     </h4>
+    <p>
+        Because at least some of the functions in a sequence are likely asynchronous, we can't rely on the function
+        <code>return</code> to pass results from one function to another.
+    </p>
+    <p>
+        We also may be using functions with arguments that we don't want to (or can't) modify due to some other
+        external dependency, so we may not be able to pass data between functions like in the previous example.
+    </p>
+    <p>
+        In this case, we can use the <code>addResult()</code> function to add the results of a function to the sequence,
+        and <code>getLastResult()</code> to retrieve the results of the previous function in the sequence.
+    </p>
+    <script type="text/javascript" id="example-12">
+    var seqExample3 = {
+
+        exampleNum : 12,
+
+        doFirstThing : function(seq){
+            $('.example-'+this.exampleNum+' .output').append('<div>Doing first thing</div>');
+            seq.addResult('This is the result from doFirstThing()');
+            seq.next();
+        },
+
+        doSecondThing : function(seq){
+            $('.example-'+this.exampleNum+' .output').append('<div>Doing second thing: The result of the last function was "'+seq.getLastResult()+'"</div>');
+            seq.addResult('This is the result from doSecondThing()');
+            seq.next();
+        },
+
+        doThirdThing : function(seq){
+            $('.example-'+this.exampleNum+' .output').append('<div>Doing third thing: The result of the last function was "'+seq.getLastResult()+'"</div>');
+            seq.addResult('This is the result from doThirdThing()');
+            seq.next();
+        },
+
+        doThings : function(){
+
+            var steps = [
+                this.doFirstThing.bind(this),
+                this.doSecondThing.bind(this),
+                this.doThirdThing.bind(this)
+            ];
+
+            var options = {
+
+                logLevel : 'DEBUG',
+                onComplete : function(seq){
+                    $('.example-12 .output').append('<div>onComplete: The result of the last function in the sequence was "'+seq.getLastResult()+'"</div>');
+                }
+            };
+
+            var seq = new DropletJS.Sequence(steps,options).run();
+        }
+    };
+    </script>
+    <p>
+        Click Run below. Note how the value passed to <code>addResult()</code> in one function is retrieved using <code>getLastResult()</code> in the
+        next function ... including <code>onComplete</code>.
+    </p>
+    <div class="example-12 example">
+        <div class="output">
+            <h4>Example 12:</h4>
+        </div>
+        <div class="buttons">
+            <input type="button" value="Run" class="button" onclick="seqExample3.doThings()" />
+        </div>
+    </div>
     <h4>
-        Doing something once the sequence has completed
+        Nesting sequences
     </h4>
-    <h4>
-        Chaining sequences
-    </h4>
+    <p>
+        In addition to functions, steps in a sequence can also be <em>other sequences</em>. In other words,
+        you can have a sequence of sequences.
+    </p>
+    <script type="text/javascript" id="example-13">
+    var seqExample4 = {
+
+        exampleNum : 13,
+
+
+        doThings : function(){
+
+            seqExample.exampleNum  = 13;
+            seqExample2.exampleNum = 13;
+            seqExample3.exampleNum = 13;
+
+            var seq1 = new DropletJS.Sequence(
+                [
+                    seqExample.doFirstThing.bind(seqExample),
+                    seqExample.doSecondThing.bind(seqExample),
+                    seqExample.doThirdThing.bind(seqExample)
+                ],
+                {
+                    name : 'Child #1',
+                    onComplete : function(){
+                        $('.example-13 .output').append('<hr />');
+                    }
+                }
+            );
+
+            var seq2 = new DropletJS.Sequence(
+                [
+                    seqExample3.doFirstThing.bind(seqExample3),
+                    seqExample3.doSecondThing.bind(seqExample3),
+                    seqExample3.doThirdThing.bind(seqExample3)
+                ],
+                {
+                    name : 'Child #2'
+                }
+            );
+
+            var seq = new DropletJS.Sequence([seq1, seq2], { logLevel : 'DEBUG', name : 'Parent' }).run();
+        }
+    };
+    </script>
+    <p>
+        Click Run below. You'll see two sequences run back-to-back, separated by a horizontal rule. Hit F12 to open your
+        browser console, and you'll see detailed logging of each step of each sequence.
+    </p>
+    <div class="example-13 example">
+        <div class="output">
+            <h4>Example 13:</h4>
+        </div>
+        <div class="buttons">
+            <input type="button" value="Run" class="button" onclick="seqExample4.doThings()" />
+        </div>
+    </div>
     <h4>
         Modifying a sequence on-the-fly
     </h4>

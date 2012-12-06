@@ -144,7 +144,7 @@ if (typeof MINIFIED === 'undefined'){
         this.steps                          = steps || [];
         this.total                          = 0;
 
-        return this.getAPI();
+        return this;
     };
 
     /**
@@ -153,24 +153,6 @@ if (typeof MINIFIED === 'undefined'){
      * @type {Object}
      */
     Sequence.prototype = {
-
-        /**
-         * Gets public API
-         *
-         * @return {Object} Publicly available methods
-         */
-        getAPI : function(){
-
-            return {
-                addStep                     : this.addStep.bind(this),
-                addResult                   : this.addResult.bind(this),
-                getLastResult               : this.getLastResult.bind(this),
-                insertStep                  : this.insertStep.bind(this),
-                kill                        : this.kill.bind(this),
-                next                        : this.next.bind(this),
-                run                         : this.run.bind(this)
-            };
-        },
 
         /**
          * Alias for global log(). Prepends sequence name to funcName.
@@ -219,7 +201,7 @@ if (typeof MINIFIED === 'undefined'){
                 this.onComplete.apply(this,args);
             }
 
-            return this.getAPI();
+            return this;
         },
 
         /**
@@ -258,9 +240,6 @@ if (typeof MINIFIED === 'undefined'){
             var args                        = Array.prototype.slice.call(arguments);
             var twoStepsBack                = this.completed-2;
 
-            /* Add this sequence as final argument to next function to be called */
-            args.push(this.getAPI());
-
             /* We only want to store the result of the last step, so we can delete
              * the result of the step two steps back (if one was stored) */
             if (typeof this.lastResult[twoStepsBack] !== 'undefined'){
@@ -284,6 +263,11 @@ if (typeof MINIFIED === 'undefined'){
                         this.log('next','Calling '+this.name+' sequence onComplete()');
                     }
 
+                    /* Add this sequence as final argument to onComplete function */
+                    args.push(this);
+
+                    this.completed += 1;
+
                     this.onComplete.apply(this,args);
                 }
 
@@ -304,6 +288,9 @@ if (typeof MINIFIED === 'undefined'){
                 }
                 /* If next step is a function (it should be), execute it */
                 else if (typeof nextStep == 'function') {
+
+                    /* Add this sequence as final argument to next function to be called */
+                    args.push(this);
 
                     nextStep.apply(this,args);
                 }
@@ -335,15 +322,22 @@ if (typeof MINIFIED === 'undefined'){
                 this.log('runChildSequence','Running child sequence: '+childSequence.name);
             }
 
+            var self                            = this;
+
             if (typeof childSequence.onComplete === 'function'){
 
-                var self                        = this;
                 var childSequenceOnComplete     = childSequence.onComplete;
 
                 /* Redefine child sequence's onComplete */
-                childSequence.onComplete        = function(){
+                childSequence.onComplete  = function(){
 
                     childSequenceOnComplete();  // Call child sequence's original onComplete function
+                    self.next.apply(self,args); // Call parent's next() function
+                };
+
+            } else {
+
+                childSequence.onComplete = function(){
                     self.next.apply(self,args); // Call parent's next() function
                 };
             }
@@ -367,7 +361,7 @@ if (typeof MINIFIED === 'undefined'){
 
             this.total                          = this.steps.length;
 
-            return this.getAPI();
+            return this;
         },
 
         /**
@@ -385,7 +379,7 @@ if (typeof MINIFIED === 'undefined'){
 
             this.total                          = this.steps.length;
 
-            return this.getAPI();
+            return this;
         },
 
         /**
@@ -402,7 +396,7 @@ if (typeof MINIFIED === 'undefined'){
             this.lastResult                     = [];
             this.lastResult[this.completed]     = result;
 
-            return this.getAPI();
+            return this;
         },
 
         /**
@@ -412,7 +406,7 @@ if (typeof MINIFIED === 'undefined'){
          */
         getLastResult : function(){
 
-            var lastStepNum                     = (this.completed === this.total ) ? this.completed : this.completed-1;
+            var lastStepNum                     = (this.completed > this.total) ? this.total : this.completed - 1;
 
             if (lastStepNum < 0 || typeof this.lastResult[lastStepNum] === 'undefined'){
                 return null;
