@@ -53,7 +53,7 @@
 
         .button {
             float:left;
-            margin:10px;
+            margin:10px 10px 10px 0;
         }
     </style>
 
@@ -344,7 +344,7 @@
     };
     </script>
     <p>
-        Go ahead and click Run to run the code above. Check out the results below:
+        Click Run and check out the results below:
     </p>
     <div class="example-4 example">
         <div class="output">
@@ -366,30 +366,38 @@
         Now let's rewrite the code to use DropletJS.Sequence, so everything happens in the order we want.
     </p>
     <script type="text/javascript" id="example-5">
-    var example5 = {
+    var seqExample = {
+
+        exampleNum : 5,
 
         doFirstThing : function(seq){
-            $('.example-5 .output').append('<div>Doing first thing</div>');
+            $('.example-'+this.exampleNum+' .output').append('<div>Doing first thing</div>');
             seq.next()
         },
 
         doSecondThing : function(seq){
 
-            $('.example-5 .output').append('<div>Waiting 2 seconds to do second thing</div>');
+            $('.example-'+this.exampleNum+' .output').append('<div>Waiting 2 seconds to do second thing</div>');
 
             setTimeout(function(){
-                $('.example-5 .output').append('<div>Doing second thing</div>');
+                $('.example-'+this.exampleNum+' .output').append('<div>Doing second thing</div>');
                 seq.next();
-            }, 2000);
+            }.bind(this), 2000);
         },
 
         doThirdThing : function(seq){
-            $('.example-5 .output').append('<div>Doing third thing</div>');
+            $('.example-'+this.exampleNum+' .output').append('<div>Doing third thing</div>');
             seq.next();
         },
 
         doThings : function(){
-            var seq = new DropletJS.Sequence([this.doFirstThing,this.doSecondThing,this.doThirdThing]).run();
+
+            var steps = [
+                this.doFirstThing.bind(this),
+                this.doSecondThing.bind(this),
+                this.doThirdThing.bind(this)
+            ];
+            var seq = new DropletJS.Sequence(steps).run();
         }
     };
     </script>
@@ -401,7 +409,7 @@
             <h4>Example 5:</h4>
         </div>
         <div class="buttons">
-            <input type="button" value="Run" class="button" onclick="example5.doThings()" />
+            <input type="button" value="Run" class="button" onclick="seqExample.doThings()" />
         </div>
     </div>
     <p>
@@ -461,14 +469,17 @@
         to run in the sequence, in the order they should be executed.
     </p>
     <p>
-        <strong>IMPORTANT: Be careful to only pass function references. Do not actually call the functions.</strong>
-    </p>
-    <p>
-        In other words, leave off the parentheses: <code>this.doFirstThing</code>, not <code>this.doFirstThing()</code>.
+        <strong>IMPORTANT: Be sure to add <code>bind()</code> to each function reference to maintain its scope.</strong>
     </p>
     <xmp class="prettyprint lang-js">
     doThings : function(){
-        var seq = new DropletJS.Sequence([this.doFirstThing,this.doSecondThing,this.doThirdThing]).run();
+
+        var steps = [
+            this.doFirstThing.bind(this),
+            this.doSecondThing.bind(this),
+            this.doThirdThing.bind(this)
+        ];
+        var seq = new DropletJS.Sequence(steps).run();
     }
     </xmp>
     <h4>
@@ -482,7 +493,13 @@
     <xmp class="prettyprint lang-js">
     // Notice run() appended to end of constructor
     doThings : function(){
-        var seq = new DropletJS.Sequence([this.doFirstThing,this.doSecondThing,this.doThirdThing]).run();
+
+        var steps = [
+            this.doFirstThing.bind(this),
+            this.doSecondThing.bind(this),
+            this.doThirdThing.bind(this)
+        ];
+        var seq = new DropletJS.Sequence(steps).run();
     }
     </xmp>
     <p>
@@ -492,8 +509,14 @@
     <xmp class="prettyprint lang-js">
     doThings : function(){
 
+        var steps = [
+            this.doFirstThing.bind(this),
+            this.doSecondThing.bind(this),
+            this.doThirdThing.bind(this)
+        ];
+
         // Create sequence instance
-        var seq = new DropletJS.Sequence([this.doFirstThing,this.doSecondThing,this.doThirdThing]);
+        var seq = new DropletJS.Sequence(steps);
 
         // Do some other stuff ...
 
@@ -507,9 +530,209 @@
     <h4>
         Debugging and logging
     </h4>
+    <p>
+        If you want to see exactly what DropletJS.Sequence is doing under the hood, you can turn on console
+        logging and set log levels by passing an options hash to the constructor as a second argument.
+        <strong>Logging is only available in the non-minified version of DropletJS.Sequence. (It is stripped
+        out of the minified version to minimize file size.)</strong>
+    </p>
+    <p>
+        Setting the <code>name</code> option will prepend the name of the sequence to any log messages, which
+        is useful if you're debugging multiple sequences in a page.
+    </p>
+    <p>
+        Setting the <code>logLevel</code> option will control how many and what type of log messages are output.
+    </p>
+    <ul>
+        <li><code>OFF</code> Turn off all debug logging</li>
+        <li><code>ERROR</code> Only output errors</li>
+        <li><code>WARN</code> Output errors and warnings</li>
+        <li><code>INFO</code> Output errors, warnings, and informational messages.</li>
+        <li><code>DEBUG</code> Output all possible log messages</li>
+    </ul>
+    <script type="text/javascript" id="example-6">
+    var example6 = {
+
+        doThings : function(){
+
+            seqExample.exampleNum = 6;
+
+            var steps = [
+                seqExample.doFirstThing.bind(seqExample),
+                seqExample.doSecondThing.bind(seqExample),
+                seqExample.doThirdThing.bind(seqExample)
+            ];
+            var options = {
+                name        : 'Example #6',
+                logLevel    : 'DEBUG'
+            };
+
+            var seq = new DropletJS.Sequence(steps,options).run();
+        }
+    };
+    </script>
+    <p>
+        Hit F12 in Chrome or Firefox (with Firebug) to open the browser console, then click Run. You'll see log messages
+        output to the browser console.
+    </p>
+    <div class="example-6 example">
+        <div class="output">
+            <h4>Example 6:</h4>
+        </div>
+        <div class="buttons">
+            <input type="button" value="Run" class="button" onclick="example6.doThings()" />
+        </div>
+    </div>
+    <h4>
+        Executing a function once the sequence is complete
+    </h4>
+    <p>
+        If you want to execute a function once all steps of your sequence are complete, you can pass an <code>onComplete</code>
+        function as part of the options hash.
+    </p>
+    <script type="text/javascript" id="example-7">
+    var example7 = {
+
+        doThings : function(){
+
+            seqExample.exampleNum = 7;
+
+            var steps = [
+                seqExample.doFirstThing.bind(seqExample),
+                seqExample.doSecondThing.bind(seqExample),
+                seqExample.doThirdThing.bind(seqExample)
+            ];
+            var options = {
+
+                // This will be called once all steps in the sequence are complete
+                onComplete  : function(){
+                    $('.example-7 .output').append('<div style="color:green">Sequence is complete</div>');
+                }
+            };
+
+            var seq = new DropletJS.Sequence(steps,options).run();
+        }
+    };
+    </script>
+    <p>Run the example below, and notice the green "Sequence is complete" at the end of the sequence.</p>
+    <div class="example-7 example">
+        <div class="output">
+            <h4>Example 7:</h4>
+        </div>
+        <div class="buttons">
+            <input type="button" value="Run" class="button" onclick="example7.doThings()" />
+        </div>
+    </div>
+    <h4>
+        Killing a sequence before it is complete
+    </h4>
+    <p>
+        Sometimes while a sequence is running, something happens that makes you want to stop the sequence before it
+        completes. For example, an AJAX request for a resource fails, and the rest of the sequence cannot run without
+        that resource.
+    </p>
+    <p>
+        To kill a sequence, simply call the <code>kill()</code> method on the sequence instance.
+    </p>
+    <p>
+        In the example below, a timeout is set to kill the sequence after 1 second. Since <code>doSecondThing()</code>
+        has a two-second timeout, the sequence will be killed before that timeout fires.
+    </p>
+    <script type="text/javascript" id="example-8">
+    var example8 = {
+
+        doThings : function(){
+
+            seqExample.exampleNum = 8;
+
+            var steps = [
+                seqExample.doFirstThing.bind(seqExample),
+                seqExample.doSecondThing.bind(seqExample),
+                seqExample.doThirdThing.bind(seqExample)
+            ];
+            var options = {
+                name        : 'Example #8',
+                logLevel    : 'DEBUG'
+            };
+
+            var seq = new DropletJS.Sequence(steps,options).run();
+
+            var killTimeout = setTimeout(function(){
+                seq.kill();
+            },1000);
+        }
+    };
+    </script>
+    <p>
+        Click Run below. Notice that the third function in the sequence is never run. If you look in your browser console (F12),
+        you'll see log messages indicating that the sequence has been killed.
+    </p>
+    <div class="example-8 example">
+        <div class="output">
+            <h4>Example 8:</h4>
+        </div>
+        <div class="buttons">
+            <input type="button" value="Run" class="button" onclick="example8.doThings()" />
+        </div>
+    </div>
+    <h4>
+        Executing a function when the sequence has been killed
+    </h4>
+    <p>
+        If you want to execute a function when a sequence is killed, you can pass an <code>onKilled</code>
+        function as part of the options hash.
+    </p>
+    <script type="text/javascript" id="example-9">
+    var example9 = {
+
+        doThings : function(){
+
+            seqExample.exampleNum = 9;
+
+            var steps = [
+                seqExample.doFirstThing.bind(seqExample),
+                seqExample.doSecondThing.bind(seqExample),
+                seqExample.doThirdThing.bind(seqExample)
+            ];
+            var options = {
+
+                // This will be called once all steps in the sequence are complete
+                onKilled  : function(){
+                    $('.example-9 .output').append('<div style="color:red">Sequence has been killed, so doThirdThing() will never execute</div>');
+                }
+            };
+
+            var seq = new DropletJS.Sequence(steps,options).run();
+
+            var killTimeout = setTimeout(function(){
+                seq.kill();
+            },1000);
+        }
+    };
+    </script>
+    <p>
+        Run the example below, and notice the red "Sequence has been killed" generated by the <code>onKilled</code>
+        function.
+    </p>
+    <p>
+        Also note that the <code>doSecondThing</code> function still completes after the sequence has been
+        killed. That is because <code>kill()</code> kills the sequence, but cannot stop a function that is already in
+        mid-execution.
+    </p>
+    <div class="example-9 example">
+        <div class="output">
+            <h4>Example 9:</h4>
+        </div>
+        <div class="buttons">
+            <input type="button" value="Run" class="button" onclick="example9.doThings()" />
+        </div>
+    </div>
     <h4>
         Adding functions one at a time instead of all at once
     </h4>
+    <p>
+
+    </p>
     <h4>
         Passing values between functions in a sequence
     </h4>
@@ -524,9 +747,6 @@
     </h4>
     <h4>
         Modifying a sequence on-the-fly
-    </h4>
-    <h4>
-        Killing a sequence before it's complete
     </h4>
 </body>
 </html>

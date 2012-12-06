@@ -62,7 +62,7 @@ if (typeof MINIFIED === 'undefined'){
          * @param funcName The name of the function generating the log message
          * @param message The message to log
          * @param payload Data object
-         * @param level Log level (ERROR, WARN, INFO, DEBUG)
+         * @param level Log level (OFF, ERROR, WARN, INFO, DEBUG)
          */
         var log = function(funcName,message,payload,level) {
 
@@ -125,23 +125,24 @@ if (typeof MINIFIED === 'undefined'){
      *  - onComplete    : Function to call automatically once sequence is complete
      *
      * @constructor
-     * @param options Object containing sequence options, or array of sequence steps
+     * @param steps Array of function references to call in sequence
+     * @param options Object containing sequence options (name, logLevel, onComplete, onKilled)
      */
-    var Sequence = function Sequence(options){
+    var Sequence = function Sequence(steps,options){
 
-        if (typeof options === 'object' && options !== null && typeof options.length === 'number'){
-            options = { steps : options }
-        }
+        var validLogLevels                  = {OFF : 1,ERROR : 1,WARN: 1,INFO : 1,DEBUG : 1};
+
+        options                             = options || {};
+        logLevel                            = (typeof options.logLevel === 'string' && options.logLevel in validLogLevels) ? options.logLevel : logLevel;
 
         this.completed                      = 0;
         this.killed                         = false;
         this.lastResult                     = [];
-        this.name                           = options.name          || null;
-        this.onComplete                     = options.onComplete    || null;
-        this.steps                          = options.steps         || [];
+        this.name                           = (typeof options.name === 'string') ? options.name : 'unnamed';
+        this.onComplete                     = (typeof options.onComplete === 'function') ? options.onComplete : null;
+        this.onKilled                       = (typeof options.onKilled === 'function') ? options.onKilled : null;
+        this.steps                          = steps || [];
         this.total                          = 0;
-
-        logLevel                            = options.logLevel      || logLevel;
 
         return this.getAPI();
     };
@@ -217,6 +218,8 @@ if (typeof MINIFIED === 'undefined'){
 
                 this.onComplete.apply(this,args);
             }
+
+            return this.getAPI();
         },
 
         /**
@@ -226,6 +229,13 @@ if (typeof MINIFIED === 'undefined'){
 
             if (!MINIFIED){
                 this.log('kill','Killing '+this.name+' sequence');
+            }
+
+            if (this.killed !== true && typeof this.onKilled === 'function'){
+
+                var args                    = Array.prototype.slice.call(arguments);
+
+                this.onKilled.apply(this,args);
             }
 
             this.killed                     = true;
@@ -239,7 +249,7 @@ if (typeof MINIFIED === 'undefined'){
             if (this.killed){
 
                 if (!MINIFIED){
-                    this.log('next',this.name+' has been killed, so next step is aborted.');
+                    this.log('next','The '+this.name+' sequence has been killed, so next step is aborted.');
                 }
 
                 return false;
@@ -356,6 +366,8 @@ if (typeof MINIFIED === 'undefined'){
             this.steps.push(step);
 
             this.total                          = this.steps.length;
+
+            return this.getAPI();
         },
 
         /**
@@ -372,6 +384,8 @@ if (typeof MINIFIED === 'undefined'){
             this.steps.splice(this.completed,0,step);
 
             this.total                          = this.steps.length;
+
+            return this.getAPI();
         },
 
         /**
@@ -387,6 +401,8 @@ if (typeof MINIFIED === 'undefined'){
 
             this.lastResult                     = [];
             this.lastResult[this.completed]     = result;
+
+            return this.getAPI();
         },
 
         /**
