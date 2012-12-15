@@ -131,7 +131,7 @@
         Animation without Sequencer
     </h3>
     <p>
-        Let's take a look at a sequential animation example, without Sequencer:
+        Let's take a look at a sequential animation example, without using Sequencer:
     </p>
     <p>
         We'll start with three squares. We'll increase the height of the first, then the width of the second, then the height of
@@ -534,7 +534,7 @@
         If you want to see exactly what Sequencer is doing under the hood, you can turn on console
         logging and set log levels by passing an options hash to the constructor as a second argument.
         <strong>Logging is only available in the non-minified version of Sequencer. (It is stripped
-        out of the minified version to minimize file size.)</strong>
+        out of the minified version to reduce file size.)</strong>
     </p>
     <p>
         Setting the <code>name</code> option will prepend the name of the sequence to any log messages, which
@@ -728,14 +728,16 @@
         </div>
     </div>
     <h4>
+        <a name="example-10"></a>
         Adding functions one at a time instead of all at once
     </h4>
     <p>
         There may be cases where you want to build up a sequence one step at a time instead of passing an array of
-        functions to the constructor. You can do this using the <code>addStep()</code> function.
+        functions to the constructor. You can do this by passing a function to the <code>addStep()</code> function,
+        or an array of functions to the <code>addSteps()</code> function.
     </p>
     <p>
-        Functions added using <code>addStep()</code> are added to the end of the sequence.
+        Functions added using <code>addStep()</code> or <code>addSteps()</code> are added to the end of the sequence.
     </p>
     <script type="text/javascript" id="example-10">
     var example10 = {
@@ -750,11 +752,9 @@
 
             // Do some stuff ...
 
-            seq.addStep(seqExample.doSecondThing.bind(seqExample));
+            seq.addSteps([seqExample.doSecondThing.bind(seqExample),seqExample.doThirdThing.bind(seqExample)]);
 
             // Do some more stuff ...
-
-            seq.addStep(seqExample.doThirdThing.bind(seqExample));
 
             seq.run();
         }
@@ -937,7 +937,6 @@
 
         exampleNum : 13,
 
-
         doThings : function(){
 
             seqExample.exampleNum  = 13;
@@ -988,5 +987,132 @@
     <h4>
         Modifying a sequence on-the-fly
     </h4>
+    <p>
+        Sometimes, you may need to modify a sequence while it is running. For example, you may want to add additional steps
+        based on the results of some function in the sequence. There are two ways to do this:
+    </p>
+    <p>
+        To add a function to the end of the sequence, you can add pass it to <code>addStep()</code>.
+    </p>
+    <p>
+        To add multiple functions to the end of a sequence, you can pass them in an array to <code>addSteps()</code>.
+    </p>
+    <script type="text/javascript" id="example-14">
+    var seqExample5 = {
+
+        exampleNum : 14,
+
+        doFirstThing : function(seq){
+            $('.example-'+this.exampleNum+' .output').append('<div>Doing first thing</div>');
+            seq.addStep(this.doAddedThing.bind(this));
+            seq.next();
+        },
+
+        doSecondThing : function(seq){
+            $('.example-'+this.exampleNum+' .output').append('<div>Doing second thing</div>');
+            seq.addSteps([this.doAddedThing.bind(this),this.doAddedThing2.bind(this)]);
+            seq.next();
+        },
+
+        doThirdThing : function(seq){
+            $('.example-'+this.exampleNum+' .output').append('<div>Doing third thing</div>');
+            seq.next();
+        },
+
+        doAddedThing : function(seq){
+            $('.example-'+this.exampleNum+' .output').append('<div>+ Doing added thing</div>');
+            seq.next();
+        },
+
+        doAddedThing2 : function(seq){
+            $('.example-'+this.exampleNum+' .output').append('<div>+ Doing added thing 2</div>');
+            seq.next();
+        },
+
+        doThings : function(){
+
+            var steps = [
+                this.doFirstThing.bind(this),
+                this.doSecondThing.bind(this),
+                this.doThirdThing.bind(this)
+            ];
+
+            var seq = new DropletJS.Sequencer(steps).run();
+        }
+    };
+    </script>
+    <p>
+        Click Run below. You'll see the single added function run after the first three functions,
+        followed by the two functions that were added with <code>addSteps()</code>.
+    </p>
+    <div class="example-14 example">
+        <div class="output">
+            <h4>Example 14:</h4>
+        </div>
+        <div class="buttons">
+            <input type="button" value="Run" class="button" onclick="seqExample5.doThings()" />
+        </div>
+    </div>
+    <p>
+        You can also insert a single function into the sequence passing it to <code>insertStep()</code>, or multiple functions
+        by passing then in an array to <code>insertSteps()</code>. This will insert the function(s)
+        as the next in the sequence, with the rest of the sequence continuing in order after the inserted step(s).
+    </p>
+    <script type="text/javascript" id="example-15">
+    var seqExample6 = {
+
+        exampleNum : 15,
+
+        doFirstThing : function(seq){
+            $('.example-'+this.exampleNum+' .output').append('<div>Doing first thing</div>');
+            seq.insertStep(this.doInsertedThing.bind(this));
+            seq.next();
+        },
+
+        doSecondThing : function(seq){
+            $('.example-'+this.exampleNum+' .output').append('<div>Doing second thing</div>');
+            seq.insertSteps([this.doInsertedThing.bind(this),this.doInsertedThing2.bind(this)]);
+            seq.next();
+        },
+
+        doThirdThing : function(seq){
+            $('.example-'+this.exampleNum+' .output').append('<div>Doing third thing</div>');
+            seq.next();
+        },
+
+        doInsertedThing : function(seq){
+            $('.example-'+this.exampleNum+' .output').append('<div>-> Doing inserted thing</div>');
+            seq.next();
+        },
+
+        doInsertedThing2 : function(seq){
+            $('.example-'+this.exampleNum+' .output').append('<div>-> Doing inserted thing 2</div>');
+            seq.next();
+        },
+
+        doThings : function(){
+
+            var steps = [
+                this.doFirstThing.bind(this),
+                this.doSecondThing.bind(this),
+                this.doThirdThing.bind(this)
+            ];
+
+            var seq = new DropletJS.Sequencer(steps).run();
+        }
+    };
+    </script>
+    <p>
+        Click Run below. You'll see the single inserted function run between the first and second functions,
+        and a pair of inserted functions run between the second and third functions.
+    </p>
+    <div class="example-15 example">
+        <div class="output">
+            <h4>Example 15:</h4>
+        </div>
+        <div class="buttons">
+            <input type="button" value="Run" class="button" onclick="seqExample6.doThings()" />
+        </div>
+    </div>
 </body>
 </html>

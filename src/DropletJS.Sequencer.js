@@ -365,6 +365,24 @@ if (typeof MINIFIED === 'undefined'){
         },
 
         /**
+         * Adds steps to end of sequence
+         *
+         * @param steps The steps (functions) to add
+         */
+        addSteps : function(steps){
+
+            if (!MINIFIED){
+                this.log('addSteps','Adding steps', { steps : steps },'DEBUG');
+            }
+
+            for (var i=0;i<steps.length;i++){
+                this.addStep(steps[i]);
+            }
+
+            return this;
+        },
+
+        /**
          * Inserts step at current position in sequence
          *
          * @param step The step (function) to insert
@@ -378,6 +396,26 @@ if (typeof MINIFIED === 'undefined'){
             this.steps.splice(this.completed,0,step);
 
             this.total                          = this.steps.length;
+
+            return this;
+        },
+
+        /**
+         * Inserts steps at current position in sequence
+         *
+         * @param steps Array of steps (functions) to insert
+         */
+        insertSteps : function(steps){
+
+            if (!MINIFIED){
+                this.log('insertSteps','Inserting steps', { steps : steps },'DEBUG');
+            }
+
+            steps.reverse();
+
+            for (var i=0;i<steps.length;i++){
+                this.insertStep(steps[i]);
+            }
 
             return this;
         },
