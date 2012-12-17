@@ -500,7 +500,7 @@ In other words, you should only be using function names, without parentheses aft
 // Right. Just function names, no parentheses.
 var sequence = new DropletJS.Sequencer([doFirst,doSecond,doThird]).run();
 
-// Wrong. Notice the parenthese after each function.
+// Wrong. Notice the parentheses after each function.
 var sequence = new DropletJS.Sequencer([doFirst(),doSecond(),doThird()]).run();
 ```
 
