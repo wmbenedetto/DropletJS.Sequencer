@@ -441,13 +441,13 @@ This will insert the function(s) as the next in the sequence, with the rest of t
 ```javascript
 var doFirst = function(seq){
     console.log('First');
-    seq.insertStep(doFirstAdded);
+    seq.insertStep(doFirstInserted);
     seq.next();
 };
 
 var doSecond = function(seq){
     console.log('Second');
-    seq.addSteps([doSecondAdded,doThirdAdded]);
+    seq.insertSteps([doSecondInserted,doThirdInserted]);
     seq.next();
 };
 
@@ -456,18 +456,18 @@ var doThird = function(seq){
     seq.next();
 };
 
-var doFirstAdded = function(seq){
-    console.log('Added #1');
+var doFirstInserted = function(seq){
+    console.log('Inserted #1');
     seq.next();
 };
 
-var doSecondAdded = function(seq){
-    console.log('Added #2');
+var doSecondInserted = function(seq){
+    console.log('Inserted #2');
     seq.next();
 };
 
-var doThirdAdded = function(seq){
-    console.log('Added #3');
+var doThirdInserted = function(seq){
+    console.log('Inserted #3');
     seq.next();
 };
 
