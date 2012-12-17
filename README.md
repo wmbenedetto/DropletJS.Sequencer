@@ -382,7 +382,7 @@ var nestedSeq = new DropletJS.Sequencer([sequence1,sequence2]).run();
 // First
 ```
 ---
-## Modifying a sequence on-the-fly
+### Modifying a sequence on-the-fly
 
 Sometimes, you may need to modify a sequence while it is running. For example, you may want to add additional steps based on the results of some function in the sequence. There are two ways to do this:
 
