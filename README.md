@@ -488,6 +488,8 @@ var sequence = new DropletJS.Sequencer([doFirst,doSecond,doThird]).run();
 
 Make sure all of the functions are receiving `seq` as an argument, and are calling `seq.next()` when they are done.
 
+---
+
 #### Why are my functions executing before I even call `run()`?
 
 Make sure you are only passing function references to Sequencer, and not actually calling the functions. 
@@ -502,10 +504,12 @@ var sequence = new DropletJS.Sequencer([doFirst,doSecond,doThird]).run();
 var sequence = new DropletJS.Sequencer([doFirst(),doSecond(),doThird()]).run();
 ```
 
+---
 #### For some reason, `this` in my functions now refers to the Sequence instance. Why?
 
 You probably need to use `bind()` when creating your sequence. See [An important note about scope] (https://github.com/wmbenedetto/DropletJS.Sequencer#an-important-note-about-scope).
 
+---
 #### Why didn't `kill()` kill my function when I called it?
 
 `kill` will kill the sequence, but it can't kill a function that is already running. 
