@@ -53,3 +53,41 @@ var doFirst = function(arg1, arg2, seq){
     seq.next();
 }
 ```
+
+### Waiting for an asynchronous function
+
+In the example above, there's really nothing special about Sequencer. You could just call those three functions without Sequencer, and they would work exactly the same.
+
+Where Sequencer becomes important is when one or more of the functions in the sequence have an asynchronous element.
+
+For example, look at `doSecond` in the example below:
+
+```javascript
+var doFirst = function(seq){
+    console.log('First');
+    seq.next();
+};
+
+var doSecond = function(seq){
+    console.log('Waiting 2 seconds ...');
+    
+    setTimeout(function(){
+        console.log('Second');
+        seq.next();
+    }.bind(this), 2000);
+};
+
+var doThird = function(seq){
+    console.log('Third');
+    seq.next();
+};
+
+var sequence = new DropletJS.Sequencer([doFirst,doSecond,doThird]).run();
+```
+
+As you can see, `doSecond` has a 2-second timeout in it. If you were to run those three functions without Sequencer, 
+you'd end up with `doThird` executing before `doSecond` had finished its timeout callback.
+
+By using Sequencer, the sequence doesn't move forward until `next()` is called. Therefore, execution is essentially paused until `doSecond` is finished what it needs to do.
+
+Once `doSecond` is done its work (in this case, finished its timeout), it calls `next()`, and the sequence can now continue on to `doThird`.
