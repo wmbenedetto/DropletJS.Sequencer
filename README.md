@@ -209,6 +209,7 @@ seq.run();
 // Second
 // Third
 ```
+---
 ### Passing values between functions in a sequence
 
 Sometimes you need to pass a value between functions in a sequence.
@@ -305,4 +306,136 @@ var sequence = new DropletJS.Sequencer([doFirst,doSecond,doThird],options).run()
 // Third. The result of the second function was: bar 
 // onComplete. The result of the third function was: baz 
 ```
+---
+### Nesting sequences
 
+In addition to functions, steps in a sequence can also be other sequences. In other words, you can have a sequence of sequences.
+
+```javascript
+var doFirst = function(seq){
+    console.log('First');
+    seq.next();
+};
+
+var doSecond = function(seq){
+    console.log('Second');
+    seq.next();
+};
+
+var doThird = function(seq){
+    console.log('Third');
+    seq.next();
+};
+
+var sequence1 = new DropletJS.Sequencer([doFirst,doSecond,doThird]);
+var sequence2 = new DropletJS.Sequencer([doThird,doSecond,doFirst]);
+var nestedSeq = new DropletJS.Sequencer([sequence1,sequence2]).run();
+
+// RESULT:
+// First
+// Second
+// Third
+// Third
+// Second
+// First
+```
+---
+## Modifying a sequence on-the-fly
+
+Sometimes, you may need to modify a sequence while it is running. For example, you may want to add additional steps based on the results of some function in the sequence. There are two ways to do this:
+
+To add a function to the end of the sequence, you can add pass it to `addStep()`.
+
+To add multiple functions to the end of a sequence, you can pass them in an array to `addSteps()`.
+
+```javascript
+var doFirst = function(seq){
+    console.log('First');
+    seq.addStep(doFirstAdded);
+    seq.next();
+};
+
+var doSecond = function(seq){
+    console.log('Second');
+    seq.addSteps([doSecondAdded,doThirdAdded]);
+    seq.next();
+};
+
+var doThird = function(seq){
+    console.log('Third');
+    seq.next();
+};
+
+var doFirstAdded = function(seq){
+    console.log('Added #1');
+    seq.next();
+};
+
+var doSecondAdded = function(seq){
+    console.log('Added #2');
+    seq.next();
+};
+
+var doThirdAdded = function(seq){
+    console.log('Added #3');
+    seq.next();
+};
+
+var sequence = new DropletJS.Sequencer([doFirst,doSecond,doThird]).run();
+
+// RESULT:
+// First
+// Second
+// Third
+// Added #1
+// Added #2
+// Added #3
+```
+
+You can also insert a single function into the sequence passing it to `insertStep()`, or multiple functions by passing them in an array to `insertSteps()`. 
+
+This will insert the function(s) as the next in the sequence, with the rest of the sequence continuing in order after the inserted step(s).
+
+```javascript
+var doFirst = function(seq){
+    console.log('First');
+    seq.insertStep(doFirstAdded);
+    seq.next();
+};
+
+var doSecond = function(seq){
+    console.log('Second');
+    seq.addSteps([doSecondAdded,doThirdAdded]);
+    seq.next();
+};
+
+var doThird = function(seq){
+    console.log('Third');
+    seq.next();
+};
+
+var doFirstAdded = function(seq){
+    console.log('Added #1');
+    seq.next();
+};
+
+var doSecondAdded = function(seq){
+    console.log('Added #2');
+    seq.next();
+};
+
+var doThirdAdded = function(seq){
+    console.log('Added #3');
+    seq.next();
+};
+
+var sequence = new DropletJS.Sequencer([doFirst,doSecond,doThird]).run();
+
+// RESULT:
+// First
+// Inserted #1
+// Second
+// Inserted #2
+// Inserted #3
+// Third
+```
