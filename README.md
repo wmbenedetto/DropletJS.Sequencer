@@ -62,7 +62,7 @@ var doFirst = function(arg1, arg2, seq){
     seq.next();
 }
 ```
-
+---
 ### Waiting for an asynchronous function
 
 In the example above, there's really nothing special about Sequencer. You could just call those three functions without Sequencer, and they would work exactly the same.
@@ -106,6 +106,48 @@ you'd end up with `doThird` executing before `doSecond` had finished its timeout
 By using Sequencer, the sequence doesn't move forward until `next()` is called. Therefore, execution is essentially paused until `doSecond` is finished what it needs to do.
 
 Once `doSecond` is done its work (in this case, finished its timeout), it calls `next()`, and the sequence can now continue on to `doThird`.
+
+---
+### An important note about scope
+
+All the examples in this README use global functions, so passing function references to Sequencer is simple: they are just passed by name: 
+
+```javascript
+var sequence = new DropletJS.Sequencer([doFirst,doSecond,doThird]).run();
+```
+However, if your functions aren't global -- like if they are properties of an object -- then you'll need to use `bind()` to preserve their scope.
+
+```javascript
+var functions = {
+    doFirst : function(seq){
+        console.log('First');
+        seq.next();
+    },
+
+    doSecond : function(seq){
+        console.log('Second');
+        seq.next();
+    },
+
+    doThird : function(seq){
+        console.log('Third');
+        seq.next();
+    }
+};
+
+var steps = [
+    functions.doFirst.bind(functions),
+    functions.doSecond.bind(functions),
+    functions.doThird.bind(functions)
+];
+
+var sequence = new DropletJS.Sequencer(steps).run();
+
+// RESULT:
+// First
+// Second
+// Third
+```
 
 ## Advanced usage
 
@@ -439,7 +481,38 @@ var sequence = new DropletJS.Sequencer([doFirst,doSecond,doThird]).run();
 // Inserted #3
 // Third
 ```
-``
+
+## FAQ
+
+#### My sequence stalled. What happened?
+
+Make sure all of the functions are receiving `seq` as an argument, and are calling `seq.next()` when they are done.
+
+#### Why are my functions executing before I even call `run()`?
+
+Make sure you are only passing function references to Sequencer, and not actually calling the functions. 
+
+In other words, you should only be using function names, without parentheses after them.
+
+```javascript
+// Right. Just function names, no parentheses.
+var sequence = new DropletJS.Sequencer([doFirst,doSecond,doThird]).run();
+
+// Wrong. Notice the parenthese after each function.
+var sequence = new DropletJS.Sequencer([doFirst(),doSecond(),doThird()]).run();
+```
+
+#### For some reason, `this` in my functions now refers to the Sequence instance. Why?
+
+You probably need to use `bind()` when creating your sequence. See [An important note about scope] (https://github.com/wmbenedetto/DropletJS.Sequencer#an-important-note-about-scope).
+
+#### Why didn't `kill()` kill my function when I called it?
+
+`kill` will kill the sequence, but it can't kill a function that is already running. 
+
+So if you have, for example, a `setTimeout` inside your function, and you call `kill()` after that that `setTimeout` has already been called, the `setTimeout` callback will fire no matter what. 
+
+However, *the next function in your sequence* will not run once `kill()` has been called.
 
 ## Questions? Bugs? Suggestions?
 
