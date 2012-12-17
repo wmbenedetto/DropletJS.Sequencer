@@ -13,9 +13,13 @@ Say you need to fetch content from a web service via AJAX. You need to wait for 
 
 Or maybe you have a complex series of animations, each of which needs to finish before the next one begins. Fade this out, then slide this up, then expand that, then fade those other things in.
 
-Can you do all that without Sequencer? Sure, if you like tightly coupled code that's isn't modular or reusable. You can just load up your code with callbacks, conditionals, and nested functions until it's a tangled, unmaintainable mess.
+Can you do all that without Sequencer? Sure, if you like tightly coupled code that isn't modular or reusable. You can just load up your code with callbacks, conditionals, and nested functions until it's a tangled, unmaintainable mess.
 
 But you shouldn't.
+
+## Examples
+
+If you really want to see Sequencer in action, clone this repo and open examples/index.html in a browser (preferably Chrome or Firefox with Firebug installed). There you'll find a ton of explanations with live code samples that you can run. The docs below explain a lot, but they're not as good as seeing it actually working.
 
 ## The basics
 
@@ -38,6 +42,11 @@ var doThird = function(seq){
 };
 
 var sequence = new DropletJS.Sequencer([doFirst,doSecond,doThird]).run();
+
+// RESULT:
+// First
+// Second
+// Third
 ```
 
 Notice that each function in the sequence is passed a `seq` argument, which is an instance of the sequence. Inside each function, we call `seq.next()`. That's what tells Sequencer that the function's work is done, and the next function should be executed.
@@ -83,6 +92,12 @@ var doThird = function(seq){
 };
 
 var sequence = new DropletJS.Sequencer([doFirst,doSecond,doThird]).run();
+
+// RESULT:
+// First
+// Waiting 2 seconds ...
+// Second
+// Third
 ```
 
 As you can see, `doSecond` has a 2-second timeout in it. If you were to run those three functions without Sequencer, 
@@ -91,3 +106,203 @@ you'd end up with `doThird` executing before `doSecond` had finished its timeout
 By using Sequencer, the sequence doesn't move forward until `next()` is called. Therefore, execution is essentially paused until `doSecond` is finished what it needs to do.
 
 Once `doSecond` is done its work (in this case, finished its timeout), it calls `next()`, and the sequence can now continue on to `doThird`.
+
+## Advanced usage
+
+### Debugging and logging
+
+If you want to see exactly what Sequencer is doing under the hood, you can turn on console logging and set log levels by passing an options hash to the constructor as a second argument. 
+
+**Logging is only available in the non-minified version of Sequencer. (It is stripped out of the minified version to reduce file size.)**
+
+Setting the `name` option will prepend the name of the sequence to any log messages, which is useful if you're debugging multiple sequences in a page.
+
+Setting the `logLevel` option will control how many and what type of log messages are output. Valid values are:
+* `OFF` Turn off all debug logging
+* `ERROR` Only output errors
+* `WARN` Output errors and warnings
+* `INFO` Output errors, warnings, and informational messages.
+* `DEBUG` Output all possible log messages
+
+```javascript
+var options = {
+    name        : 'Example',
+    logLevel    : 'DEBUG'
+};
+
+var seq = new DropletJS.Sequencer([doFirst, doSecond, doThird],options).run();
+```
+---
+### Executing a function once the sequence is complete
+
+If you want to execute a function once all steps of your sequence are complete, you can pass an `onComplete` function as part of the options hash.
+
+```javascript
+var options = {
+    onComplete : function(){
+        console.log('DONE!');
+    }
+};
+
+var seq = new DropletJS.Sequencer([doFirst, doSecond, doThird],options).run();
+
+// RESULT:
+// First
+// Waiting 2 seconds ...
+// Second
+// Third
+// DONE!
+```
+---
+### Killing a sequence before it is complete
+
+Sometimes while a sequence is running, something happens that makes you want to stop the sequence before it completes. For example, an AJAX request for a resource fails, and the rest of the sequence cannot run without that resource.
+
+To kill a sequence, simply call the `kill()` method on the sequence instance.
+
+To execute a function when a sequence is killed, you can pass an `onKilled` function as part of the options hash.
+
+In the example below, a timeout is set to kill the sequence after 1 second. Since `doSecond()` has a two-second timeout, the sequence will be killed before that timeout fires.
+
+```javascript
+var options = {
+    onKilled : function(){
+        console.log('KILLED!!');
+    }
+};
+
+var seq = new DropletJS.Sequencer([doFirst, doSecond, doThird],options).run();
+
+var killTimeout = setTimeout(function(){
+    seq.kill();
+},1000);
+
+// RESULT:
+// First
+// Waiting 2 seconds ...
+// KILLED!
+// Second
+```
+---
+### Adding functions one at a time instead of all at once
+
+There may be cases where you want to build up a sequence one step at a time instead of passing an array of functions to the constructor. You can do this by passing a function to the `addStep()` function, or an array of functions to the `addSteps()` function.
+
+Functions added using `addStep()` or `addSteps()` are added to the end of the sequence.
+
+```javascript
+var seq = new DropletJS.Sequencer();
+
+seq.addStep(doFirst);
+
+// Do some stuff ...
+
+seq.addSteps([doSecond, doThird]);
+
+// Do some more stuff ...
+
+seq.run();
+
+// RESULT:
+// First
+// Waiting 2 seconds ...
+// Second
+// Third
+```
+### Passing values between functions in a sequence
+
+Sometimes you need to pass a value between functions in a sequence.
+
+To pass a value to the first function in the sequence, you can pass it as an argument (or arguments) to the `run()` function.
+
+You can continue passing values along the sequence by passing them as arguments to the `next()` function.
+
+Arguments passed to `next()` in the last function of the sequence will be passed to the `onComplete()` function (if defined).
+
+Of course, in all cases, the functions need to be prepared to accept and use those arguments.
+
+**PROTIP:** To avoid tightly coupling functions together, write your functions to accept a single data object as the lone argument.
+
+In the example below, a data object has a `counter` property. The data object is passed to `run()`. Each function then increments the counter and passes the data object to `next()`. At the end, the data object ends up in `onComplete`.
+
+```javascript
+var doFirst = function(data,seq){
+    data.counter++;
+    console.log('First:',data.counter);
+    seq.next(data);
+};
+
+var doSecond = function(data,seq){
+    data.counter++;
+    console.log('Second',data.counter);
+    seq.next(data);
+};
+
+var doThird = function(data,seq){
+    data.counter++;
+    console.log('Third',data.counter);
+    seq.next(data);
+};
+
+var options = {
+    onComplete : function(data){
+        data.counter++;
+        console.log('onComplete:',data.counter);
+    }
+};
+
+var data = {
+    counter : 0
+};
+
+var sequence = new DropletJS.Sequencer([doFirst,doSecond,doThird],options).run(data);
+
+// RESULT:
+// First: 1
+// Second: 2
+// Third: 3
+// onComplete: 4
+```
+---
+### Retrieving results from the previous function in the sequence
+
+Because at least some of the functions in a sequence are likely asynchronous, we can't rely on the function `return` to pass results from one function to another.
+
+We also may be using functions with arguments that we don't want to (or can't) modify due to some other external dependency, so we may not be able to pass data between functions like in the previous example.
+
+In this case, we can use the `addResult()` function to add the results of a function to the sequence, and `getLastResult()` to retrieve the results of the previous function in the sequence.
+
+```javascript
+var doFirst = function(seq){
+    console.log('First.');
+    seq.addResult('foo');
+    seq.next();
+};
+
+var doSecond = function(seq){
+    console.log('Second. The result of the first function was: '+seq.getLastResult());
+    seq.addResult('bar');
+    seq.next();
+};
+
+var doThird = function(seq){
+    console.log('Third. The result of the second function was: '+seq.getLastResult());
+    seq.addResult('baz');
+    seq.next();
+};
+
+var options = {
+    onComplete : function(seq){
+        console.log('onComplete. The result of the third function was: '+seq.getLastResult());
+    }
+};
+
+var sequence = new DropletJS.Sequencer([doFirst,doSecond,doThird],options).run();
+
+// RESULT:
+// First.
+// Second. The result of the first function was: foo 
+// Third. The result of the second function was: bar 
+// onComplete. The result of the third function was: baz 
+```
+
