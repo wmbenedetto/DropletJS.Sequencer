@@ -2,7 +2,7 @@
     "name"                      : "DropletJS.Sequencer",
     "version"                   : "0.1.0",
     "description"               : "DropletJS.Sequencer executes JavaScript functions in a specified order, waiting for one to finish before executing the next.",
-    "keywords"                  : ["sequence", "sequencer","series"],
+    "keywords"                  : ["sequence", "sequencer","series","synchronous","asynchronous"],
     "categories"                : ["Utilities"],
     "author": {
         "name"                  : "Warren Benedetto",
