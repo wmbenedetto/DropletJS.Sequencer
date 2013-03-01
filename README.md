@@ -17,9 +17,35 @@ Can you do all that without Sequencer? Sure, if you like tightly coupled code th
 
 But you shouldn't.
 
+## Quick install
+
+DropletJS.Sequencer is available via a number of popular package managers:
+
+###NPM
+
+```
+npm install dropletjs.sequencer
+```
+
+###JamJS
+```
+jam install DropletJS.Sequencer
+```
+
+###Bower
+```
+bower install DropletJS.Sequencer
+```
+
+Or you can download the latest tag from https://github.com/wmbenedetto/DropletJS.Sequencer/tags
+
 ## Examples
 
-If you really want to see Sequencer in action, download the latest tag (or clone this repo) and open examples/index.html in a browser (preferably Chrome or Firefox with Firebug installed). There you'll find a ton of explanations with live code samples that you can run. The docs below explain a lot, but they're not as good as seeing it actually working.
+If you really want to see Sequencer in action, visit http://assets.wmbenedetto.com/DropletJS.Sequencer/examples/
+
+Or you can download the latest tag (or clone this repo) and open examples/index.html in a browser (preferably Chrome or Firefox with Firebug installed). 
+
+Either way, you'll find a ton of explanations with live code samples that you can run. The docs below explain a lot, but they're not as good as seeing it actually working.
 
 ## The basics
 
