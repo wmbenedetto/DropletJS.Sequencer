@@ -1,5 +1,5 @@
 {
-    "name"                      : "DropletJS.Sequencer",
+    "name"                      : "dropletjs.sequencer",
     "version"                   : "0.1.2",
     "description"               : "DropletJS.Sequencer executes JavaScript functions in a specified order, waiting for one to finish before executing the next.",
     "keywords"                  : ["sequence", "sequencer","series","synchronous","asynchronous"],
