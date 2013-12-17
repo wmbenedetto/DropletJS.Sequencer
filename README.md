@@ -41,7 +41,7 @@ Or you can download the latest tag from https://github.com/wmbenedetto/DropletJS
 
 ## Examples
 
-If you really want to see Sequencer in action, visit http://assets.wmbenedetto.com/DropletJS.Sequencer/examples/
+If you really want to see Sequencer in action, visit http://demos.wmbenedetto.com/DropletJS.Sequencer/examples/
 
 Or you can download the latest tag (or clone this repo) and open examples/index.html in a browser (preferably Chrome or Firefox with Firebug installed). 
 
