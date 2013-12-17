@@ -133,7 +133,10 @@ if (typeof MINIFIED === 'undefined'){
         var validLogLevels                  = {OFF : 1,ERROR : 1,WARN: 1,INFO : 1,DEBUG : 1};
 
         options                             = options || {};
-        logLevel                            = (typeof options.logLevel === 'string' && options.logLevel in validLogLevels) ? options.logLevel : logLevel;
+
+        if (!MINIFIED){
+            logLevel                        = (typeof options.logLevel === 'string' && options.logLevel in validLogLevels) ? options.logLevel : logLevel;
+        }
 
         this.completed                      = 0;
         this.killed                         = false;
