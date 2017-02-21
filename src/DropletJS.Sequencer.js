@@ -3,6 +3,8 @@ if (typeof MINIFIED === 'undefined'){
     MINIFIED = false;
 }
 
+var root = (typeof window === 'undefined') ? global : window;
+
 /**
  *     ____                   __     __      _______
  *    / __ \_________  ____  / /__  / /_    / / ___/
@@ -33,7 +35,7 @@ if (typeof MINIFIED === 'undefined'){
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-(function(window,undefined){
+(function(root,undefined){
 
     if (!MINIFIED){
 
@@ -46,7 +48,7 @@ if (typeof MINIFIED === 'undefined'){
         };
 
         var logLevel                        = 'OFF';
-        var console                         = window.console || {};
+        var console                         = root.console || {};
 
         console.log                         = (typeof console.log   === 'function') ? console.log   : function() {};
         console.info                        = (typeof console.info  === 'function') ? console.info  : console.log;
@@ -457,8 +459,14 @@ if (typeof MINIFIED === 'undefined'){
         }
     };
 
+
+    /* If in NodeJS context, module will exist */
+    if (typeof module !== 'undefined'){
+
+        module.exports                          = Sequencer;
+    }
     /* If RequireJS define() is present, use it to export Sequencer */
-    if (typeof define === "function") {
+    else if (typeof define === "function") {
 
         define(function() {
             return Sequencer;
@@ -467,8 +475,8 @@ if (typeof MINIFIED === 'undefined'){
     /* Otherwise, add Sequencer to global namespace as DropletJS.Sequencer */
     else {
 
-        window.DropletJS                        = (typeof window.DropletJS === 'object' && window.DropletJS !== 'null') ? window.DropletJS : {};
-        window.DropletJS.Sequencer              = Sequencer;
+        root.DropletJS                          = (typeof root.DropletJS === 'object' && root.DropletJS !== 'null') ? root.DropletJS : {};
+        root.DropletJS.Sequencer                = Sequencer;
     }
 
-}(window));
+}(root));
